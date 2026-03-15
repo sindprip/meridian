@@ -491,18 +491,34 @@ export async function closePosition({ position_address }) {
 
     const positionPubKey = new PublicKey(position_address);
 
-    // Remove all liquidity, claim fees, and close the position account in one call
-    const removeTx = await pool.removeLiquidity({
+    const txHashes = [];
+
+    // ─── Step 1: Claim Fees (to clear account state) ───────────
+    try {
+      log("close", `Step 1: Claiming fees for ${position_address}`);
+      const claimTx = await pool.claimSwapFee({
+        owner: wallet.publicKey,
+        position: positionPubKey,
+      });
+      const claimHash = await sendAndConfirmTransaction(getConnection(), claimTx, [wallet]);
+      txHashes.push(claimHash);
+      log("close", `Step 1 OK: ${claimHash}`);
+    } catch (e) {
+      log("close_warn", `Step 1 (Claim) failed or nothing to claim: ${e.message}`);
+    }
+
+    // ─── Step 2: Remove Liquidity & Close ──────────────────────
+    log("close", `Step 2: Removing liquidity and closing account`);
+    const closeTx = await pool.removeLiquidity({
       user: wallet.publicKey,
       position: positionPubKey,
-      fromBinId: -887272,   // min possible bin — SDK will clamp to actual range
-      toBinId: 887272,      // max possible bin
-      bps: new (await import("bn.js")).default(10000), // 100% = 10000 bps
+      fromBinId: -887272,
+      toBinId: 887272,
+      bps: new (await import("bn.js")).default(10000),
       shouldClaimAndClose: true,
     });
 
-    const txHashes = [];
-    for (const tx of Array.isArray(removeTx) ? removeTx : [removeTx]) {
+    for (const tx of Array.isArray(closeTx) ? closeTx : [closeTx]) {
       const txHash = await sendAndConfirmTransaction(getConnection(), tx, [wallet]);
       txHashes.push(txHash);
     }
