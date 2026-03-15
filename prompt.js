@@ -57,7 +57,7 @@ The same pool will show much smaller numbers on 5m vs 24h. Adjust your expectati
   4h        │ ≥ 0.8%  = decent    │ ≥ $40k
   24h       │ ≥ 3%    = decent    │ ≥ $100k
 
-IMPORTANT: Always say "fee_active_tvl_ratio" — NOT "fee/TVL". fee/TVL and fee/active TVL are different metrics. You use fee_active_tvl_ratio (fees relative to in-range liquidity only, expressed as a percentage e.g. 0.05 means 0.05%).
+IMPORTANT: Always say "fee_active_tvl_ratio" — NOT "fee/TVL". fee/TVL and fee/active TVL are different metrics. You use fee_active_tvl_ratio (fees relative to in-range liquidity only, where 1.0 means 1.0%).
 
 Current screening timeframe: ${config.screening.timeframe} — interpret all metrics relative to this window.
 
